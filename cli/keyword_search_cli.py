@@ -1,0 +1,37 @@
+import argparse
+import json
+import string
+from helper_functions import tokenize
+
+def main() -> None:
+    with open("data/movies.json","r") as file:
+        movie_dict=json.load(file)
+        #print(type(movie_dict["movies"]))
+        parser = argparse.ArgumentParser(description="Keyword Search CLI")
+        subparsers = parser.add_subparsers(dest="command", help="Available commands")
+
+        search_parser = subparsers.add_parser("search", help="Search movies using keywords")
+        search_parser.add_argument("query", type=str, help="Search query")
+
+        args = parser.parse_args()
+
+        match args.command:
+            case "search":
+                print(f"Searching for: {args.query}")
+                matching=[]
+                for movie in movie_dict["movies"]:
+                    trans_table = str.maketrans("","",string.punctuation)
+                    argument = args.query.translate(trans_table)
+                    title=movie["title"].translate(trans_table)
+                    for word in tokenize(argument.lower()):
+                        if word in title.lower():
+                            if movie["title"] not in matching:
+                                matching.append(movie["title"])
+                for i in range(5 if len(matching)>5 else len(matching)):
+                    print(f"{i+1}. {matching[i]}\n")
+            case _:
+                parser.print_help()
+
+
+if __name__ == "__main__":
+    main()
