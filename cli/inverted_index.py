@@ -7,16 +7,17 @@ class InvertedIndex:
     def __init__(self):
         self.index = {} #token to set of doc_id  
         self.docmap = {} #doc_id to full doc object
+        self.stop = stop_words("data/stopwords.txt")
 
     def __add_documents(self,doc_id,text):
-        tokens = transform_tokenized(text,stop_words("data/stopwords.txt"))
+        tokens = transform_tokenized(text,self.stop)
         for token in tokens:
             if token not in self.index:
                 self.index[token]=set()
             self.index[token].add(doc_id)
 
     def get_documents(self, term):
-        sanitized_term_list = transform_tokenized(term,stop_words("data/stopwords.txt"))
+        sanitized_term_list = transform_tokenized(term,self.stop)
         list_of_ids = []
         for item in sanitized_term_list:
             set_of_ids = self.index.get(item,set())
@@ -39,9 +40,16 @@ class InvertedIndex:
         with open("cache/docmap.pkl", "wb") as f2:
             pickle.dump(self.docmap,f2)
 
+    def load(self):
+        with open("cache/index.pkl", "rb") as f:
+            index = pickle.load(f)
+        with open("cache/docmap.pkl", "rb") as f2:
+            docmap = pickle.load(f2)
+        self.index = index
+        self.docmap = docmap
+
 def build_command():
     index_class = InvertedIndex()
     index_class.build()
     index_class.save()
-    docs = index_class.get_documents("merida")
-    print(f"First document for token 'merida' = {docs[0]}")
+

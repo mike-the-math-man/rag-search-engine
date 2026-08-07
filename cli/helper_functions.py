@@ -1,5 +1,9 @@
 import string
 import json
+from nltk.stem import PorterStemmer
+
+stemmer = PorterStemmer()
+
 
 def tokenize(input: str):
     result=input.split()
@@ -17,7 +21,7 @@ def transform_tokenized(imput: str, list_stop: list):
     filtered_args=[]
     for thing in tokenize(argument):
         if thing not in list_stop:
-            filtered_args.append(thing)
+            filtered_args.append(stemmer.stem(thing))
     return filtered_args
 
 def stop_words(path: str):

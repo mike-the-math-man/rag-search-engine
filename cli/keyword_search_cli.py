@@ -1,15 +1,9 @@
 import argparse
-from nltk.stem import PorterStemmer
 
-from inverted_index import build_command
-from helper_functions import  transform_tokenized,stop_words, load_movies
 
-def main() -> None:
-    movie_dict = load_movies()
-    list_stop = stop_words("data/stopwords.txt")
+from inverted_index import build_command, InvertedIndex
 
-    stemmer = PorterStemmer()
-        
+def main() -> None:       
     parser = argparse.ArgumentParser(description="Keyword Search CLI")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
     search_parser = subparsers.add_parser("search", help="Search movies using keywords")
@@ -17,20 +11,25 @@ def main() -> None:
     subparsers.add_parser("build", help="Build movies inverted index")
     args = parser.parse_args()
 
+    index_class = InvertedIndex()
+
     match args.command:
         case "search":
             print(f"Searching for: {args.query}")
-            matching=[]
-            for movie in movie_dict:
-                filtered_args = transform_tokenized(args.query,list_stop)
-                filtered_titles = transform_tokenized(movie["title"],list_stop)
-                for word in filtered_args:
-                    for title in filtered_titles:
-                        if stemmer.stem(word) in stemmer.stem(title):
-                            if movie["title"] not in matching:
-                                matching.append(movie["title"])
-            for i in range(5 if len(matching)>5 else len(matching)):
-                print(f"{i+1}. {matching[i]}\n")
+            try:
+                index_class.load()
+            except FileNotFoundError:
+                print("File not found")
+                return
+            matching=set()
+            for id in index_class.get_documents(args.query):  #was word
+                matching.add(id)
+                if len(matching)>4:
+                    break
+            matching = list(matching)
+            matching.sort()
+            for i in range(len(matching)):  
+                print(f"{matching[i]}. {index_class.docmap[matching[i]]['title']}\n")
         case "build":
             build_command()
         case _:
