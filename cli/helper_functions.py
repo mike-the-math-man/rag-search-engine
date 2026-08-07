@@ -11,6 +11,15 @@ def tokenize(input: str):
         result.remove("")
     return result
 
+def tokenize_single(term):
+    term = preprocess(term)
+    result=term.split()
+    if "" in result:
+        result.remove("")
+    if len(result)!=1:
+        raise Exception("Not one token")
+    return result
+
 def preprocess(input_string: str):
     trans_table = str.maketrans("","",string.punctuation)
     argument = input_string.translate(trans_table).lower()

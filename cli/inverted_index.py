@@ -1,5 +1,6 @@
 from helper_functions import  stop_words, load_movies, transform_tokenized
 import pickle
+import collections
 
 
 
@@ -8,10 +9,14 @@ class InvertedIndex:
         self.index = {} #token to set of doc_id  
         self.docmap = {} #doc_id to full doc object
         self.stop = stop_words("data/stopwords.txt")
+        self.term_frequencies = {} #doc_ids to counter objects
 
     def __add_documents(self,doc_id,text):
+        if doc_id not in self.term_frequencies:
+            self.term_frequencies[doc_id]= collections.Counter()
         tokens = transform_tokenized(text,self.stop)
         for token in tokens:
+            self.term_frequencies[doc_id][token]+=1
             if token not in self.index:
                 self.index[token]=set()
             self.index[token].add(doc_id)
@@ -39,14 +44,25 @@ class InvertedIndex:
             pickle.dump(self.index,f)
         with open("cache/docmap.pkl", "wb") as f2:
             pickle.dump(self.docmap,f2)
+        with open("cache/term_frequencies.pkl", "wb") as f3:
+            pickle.dump(self.term_frequencies ,f3)
 
     def load(self):
         with open("cache/index.pkl", "rb") as f:
-            index = pickle.load(f)
+            self.index  = pickle.load(f)
         with open("cache/docmap.pkl", "rb") as f2:
-            docmap = pickle.load(f2)
-        self.index = index
-        self.docmap = docmap
+            self.docmap = pickle.load(f2)
+        with open("cache/term_frequencies.pkl", "rb") as f3:
+            self.term_frequencies = pickle.load(f3)
+
+    def get_tf(self, doc_id, term):
+        if doc_id not in self.term_frequencies:
+            print("doc_id missing")
+            return 0
+        if term not in self.term_frequencies[doc_id]:
+            print("term missing")
+            return 0
+        return self.term_frequencies[doc_id][term]
 
 def build_command():
     index_class = InvertedIndex()
