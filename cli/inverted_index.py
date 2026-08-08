@@ -1,7 +1,6 @@
-from helper_functions import  stop_words, load_movies, transform_tokenized
+from helper_functions import  stop_words, load_movies, transform_tokenized, tokenize_single
 import pickle
 import collections
-
 
 
 class InvertedIndex:
@@ -63,6 +62,14 @@ class InvertedIndex:
             print("term missing")
             return 0
         return self.term_frequencies[doc_id][term]
+
+    def get_doc_f(self, term):
+        term_single = tokenize_single(term)
+        if term_single[0] not in self.index:
+            print(term_single[0])
+            print("term missing")
+            return 0
+        return len(self.index[term_single[0]])
 
 def build_command():
     index_class = InvertedIndex()

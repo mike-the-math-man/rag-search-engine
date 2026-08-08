@@ -2,6 +2,7 @@ import argparse
 
 from helper_functions import tokenize_single
 from inverted_index import build_command, InvertedIndex
+import math
 
 def main() -> None:       
     parser = argparse.ArgumentParser(description="Keyword Search CLI")
@@ -12,6 +13,8 @@ def main() -> None:
     tf_parser = subparsers.add_parser("tf", help="term frequency search - ID and a term as arguments")
     tf_parser.add_argument("ID", type=str, help="document ID")
     tf_parser.add_argument("term", type=str, help="search term")
+    idf_parser = subparsers.add_parser("idf", help="calculate idf for one term")
+    idf_parser.add_argument("idf_term", type=str, help="search term")
     args = parser.parse_args()
 
     index_class = InvertedIndex()
@@ -20,9 +23,7 @@ def main() -> None:
     except FileNotFoundError:
         print("File not found")
         return
-    #for key in index_class.term_frequencies:
-    #    print(key)
-    #print(index_class.term_frequencies[5000])
+    #print(index_class.index["grizzly"])
     match args.command:
         case "search":
             print(f"Searching for: {args.query}")
@@ -43,6 +44,10 @@ def main() -> None:
             term_single = tokenize_single(args.term)
             term_frequency = index_class.get_tf(int(args.ID),term_single[0])
             print(term_frequency)
+        case "idf":
+            print(f"Searching for: {args.idf_term}")
+            term_idf = math.log((len(index_class.docmap) + 1) / (index_class.get_doc_f(args.idf_term) + 1))
+            print(f"Inverse document frequency of '{args.idf_term}': {term_idf:.2f}")        
         case _:
             parser.print_help()
 

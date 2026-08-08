@@ -18,6 +18,7 @@ def tokenize_single(term):
         result.remove("")
     if len(result)!=1:
         raise Exception("Not one token")
+    result[0] = stemmer.stem(result[0])
     return result
 
 def preprocess(input_string: str):
